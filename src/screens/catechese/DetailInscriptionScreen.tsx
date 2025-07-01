@@ -1,20 +1,29 @@
 /**
-    * @description      : 
-    * @author           : AbigaelHOMENYA
-    * @group            : 
-    * @created          : 10/06/2025 - 09:50:41
-    * 
-    * MODIFICATION LOG
-    * - Version         : 1.0.0
-    * - Date            : 10/06/2025
-    * - Author          : AbigaelHOMENYA
-    * - Modification    : 
-**/
-import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, Button, StyleSheet, Alert, ScrollView } from 'react-native';
-import axios from 'axios';
-import { API_URL } from '../../services/config';
-import { useRoute, useNavigation } from '@react-navigation/native';
+ * @description      :
+ * @author           : AbigaelHOMENYA
+ * @group            :
+ * @created          : 10/06/2025 - 09:50:41
+ *
+ * MODIFICATION LOG
+ * - Version         : 1.0.0
+ * - Date            : 10/06/2025
+ * - Author          : AbigaelHOMENYA
+ * - Modification    :
+ **/
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  Button,
+  StyleSheet,
+  Alert,
+  ScrollView,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import { API_URL } from "../../services/config";
+import { useRoute, useNavigation } from "@react-navigation/native";
 
 const DetailInscriptionScreen = () => {
   const route = useRoute();
@@ -26,7 +35,7 @@ const DetailInscriptionScreen = () => {
 
   const fetchInscription = async () => {
     try {
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem("token");
       const res = await axios.get(`${API_URL}/inscriptions/${inscriptionId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -35,7 +44,10 @@ const DetailInscriptionScreen = () => {
       setInscription(res.data);
     } catch (error) {
       console.error(error);
-      Alert.alert('Erreur', "Impossible de charger les détails de l'inscription");
+      Alert.alert(
+        "Erreur",
+        "Impossible de charger les détails de l'inscription."
+      );
     } finally {
       setLoading(false);
     }
@@ -46,15 +58,18 @@ const DetailInscriptionScreen = () => {
   }, []);
 
   const handlePaiement = () => {
-    navigation.navigate('PaiementCatechese', { inscriptionId });
+    navigation.navigate("PaiementCatechese", { inscriptionId });
   };
 
   const handleVoirRecu = () => {
-    if (inscription?.paiement?.recu_pdf_url) {
-      navigation.navigate('VoirRecuPDF', { url: inscription.paiement.recu_pdf_url });
-    } else {
-      Alert.alert('Reçu non disponible', 'Le reçu ne peut pas être affiché pour le moment.');
-    }
+    inscription?.paiement?.recu_pdf_url
+      ? navigation.navigate("VoirRecuPDF", {
+          url: inscription.paiement.recu_pdf_url,
+        })
+      : Alert.alert(
+          "Reçu non disponible",
+          "Le reçu ne peut pas être affiché pour le moment."
+        );
   };
 
   if (loading) {
@@ -68,13 +83,26 @@ const DetailInscriptionScreen = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Détails de l'inscription</Text>
-      <Text>Nom : {inscription.nom_catechumene}</Text>
-      <Text>Session : {inscription.session?.libelle}</Text>
-      <Text>Niveau : {inscription.niveau?.libelle}</Text>
-      <Text>Statut paiement : {inscription.paiement ? 'Payé' : 'Non payé'}</Text>
+
+      <Text>Nom : {inscription.catechumene?.nom ?? "Inconnu"}</Text>
+      <Text>Session : {inscription.session?.lib_session ?? "N/A"}</Text>
+      <Text>Niveau : {inscription.niveau?.lib_niveau ?? "N/A"}</Text>
+      <Text>Année : {inscription.annee_catechetique ?? "N/A"}</Text>
+      <Text>
+        Statut paiement :{" "}
+        <Text style={{ color: inscription.paiement ? "green" : "red" }}>
+          {inscription.paiement ? "Payé" : "Non payé"}
+        </Text>
+      </Text>
 
       {!inscription.paiement && (
-        <Button title="Effectuer le paiement" onPress={handlePaiement} color="#2F3C7E" />
+        <View style={{ marginTop: 10 }}>
+          <Button
+            title="Effectuer le paiement"
+            onPress={handlePaiement}
+            color="#2F3C7E"
+          />
+        </View>
       )}
 
       {inscription.paiement?.recu_pdf_url && (
@@ -95,15 +123,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 15,
   },
   errorText: {
     marginTop: 50,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 16,
-    color: 'red',
+    color: "red",
   },
 });
-
-
