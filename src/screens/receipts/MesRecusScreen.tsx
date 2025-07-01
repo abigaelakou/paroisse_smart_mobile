@@ -1,18 +1,17 @@
 /**
-    * @description      : 
-    * @author           : AbigaelHOMENYA
-    * @group            : 
-    * @created          : 12/06/2025 - 10:22:42
-    * 
-    * MODIFICATION LOG
-    * - Version         : 1.0.0
-    * - Date            : 12/06/2025
-    * - Author          : AbigaelHOMENYA
-    * - Modification    : 
-**/
+ * @description      :
+ * @author           : AbigaelHOMENYA
+ * @group            :
+ * @created          : 12/06/2025 - 10:22:42
+ *
+ * MODIFICATION LOG
+ * - Version         : 1.0.0
+ * - Date            : 12/06/2025
+ * - Author          : AbigaelHOMENYA
+ * - Modification    :
+ **/
 
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -22,18 +21,22 @@ import {
   StyleSheet,
   Modal,
   Pressable,
-} from 'react-native';
-import * as FileSystem from 'expo-file-system';
-import { WebView } from 'react-native-webview';
+} from "react-native";
+import * as FileSystem from "expo-file-system";
+import { WebView } from "react-native-webview";
+import { API_URL } from "../../services/config";
 
-const RECEIPT_DIR = FileSystem.documentDirectory + 'reçus/';
+const RECEIPT_DIR = FileSystem.documentDirectory + "recus/";
 
-const MesReçusScreen = () => {
-  const [pdfs, setPdfs] = useState<{ uri: string; name: string; date: number }[]>([]);
+const MesRecusScreen = () => {
+  const [pdfs, setPdfs] = useState<
+    { uri: string; name: string; date: number }[]
+  >([]);
   const [selectedUri, setSelectedUri] = useState<string | null>(null);
 
-  const loadReçus = async () => {
+  const loadRecus = async () => {
     try {
+      await FileSystem.makeDirectoryAsync(RECEIPT_DIR, { intermediates: true });
       const files = await FileSystem.readDirectoryAsync(RECEIPT_DIR);
       const fileDetails = await Promise.all(
         files.map(async (file) => {
@@ -51,30 +54,37 @@ const MesReçusScreen = () => {
       const sorted = fileDetails.sort((a, b) => b.date - a.date);
       setPdfs(sorted);
     } catch (error) {
-      console.error('Erreur de chargement reçus :', error);
+      console.error("Erreur de chargement recus :", error);
+    }
+    {
+      pdfs.length === 0 && (
+        <Text style={{ fontStyle: "italic", color: "#888", marginTop: 30 }}>
+          Aucun reçu enregistré pour l’instant.
+        </Text>
+      );
     }
   };
 
   const handleDelete = (uri: string) => {
-    Alert.alert('Supprimer', 'Supprimer ce reçu ?', [
-      { text: 'Annuler', style: 'cancel' },
+    Alert.alert("Supprimer", "Supprimer ce recu ?", [
+      { text: "Annuler", style: "cancel" },
       {
-        text: 'Supprimer',
-        style: 'destructive',
+        text: "Supprimer",
+        style: "destructive",
         onPress: async () => {
           await FileSystem.deleteAsync(uri, { idempotent: true });
-          loadReçus();
+          loadRecus();
         },
       },
     ]);
   };
 
   const handleDeleteAll = () => {
-    Alert.alert('Tout supprimer', 'Supprimer tous les reçus ?', [
-      { text: 'Annuler', style: 'cancel' },
+    Alert.alert("Tout supprimer", "Supprimer tous les recus ?", [
+      { text: "Annuler", style: "cancel" },
       {
-        text: 'Tout supprimer',
-        style: 'destructive',
+        text: "Tout supprimer",
+        style: "destructive",
         onPress: async () => {
           const files = await FileSystem.readDirectoryAsync(RECEIPT_DIR);
           await Promise.all(
@@ -82,7 +92,7 @@ const MesReçusScreen = () => {
               FileSystem.deleteAsync(RECEIPT_DIR + file, { idempotent: true })
             )
           );
-          loadReçus();
+          loadRecus();
         },
       },
     ]);
@@ -90,20 +100,25 @@ const MesReçusScreen = () => {
 
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp * 1000);
-    return date.toLocaleDateString('fr-FR') + ' ' + date.toLocaleTimeString('fr-FR');
+    return (
+      date.toLocaleDateString("fr-FR") + " " + date.toLocaleTimeString("fr-FR")
+    );
   };
 
   useEffect(() => {
-    loadReçus();
+    loadRecus();
   }, []);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Mes reçus PDF</Text>
+      <Text style={styles.title}>Mes recus PDF</Text>
 
       {pdfs.length > 0 && (
-        <TouchableOpacity style={styles.deleteAllButton} onPress={handleDeleteAll}>
-          <Text style={styles.deleteAllText}>🧹 Supprimer tous les reçus</Text>
+        <TouchableOpacity
+          style={styles.deleteAllButton}
+          onPress={handleDeleteAll}
+        >
+          <Text style={styles.deleteAllText}>🧹 Supprimer tous les recus</Text>
         </TouchableOpacity>
       )}
 
@@ -141,38 +156,37 @@ const MesReçusScreen = () => {
   );
 };
 
-export default MesReçusScreen;
+export default MesRecusScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#fff' },
-  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 16 },
+  container: { flex: 1, padding: 16, backgroundColor: "#fff" },
+  title: { fontSize: 20, fontWeight: "bold", marginBottom: 16 },
   deleteAllButton: {
-    backgroundColor: '#f9c2c2',
+    backgroundColor: "#f9c2c2",
     padding: 10,
     borderRadius: 8,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     marginBottom: 12,
   },
-  deleteAllText: { color: '#721C24', fontWeight: 'bold' },
+  deleteAllText: { color: "#721C24", fontWeight: "bold" },
   itemContainer: {
     padding: 12,
     marginVertical: 6,
     borderRadius: 8,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: "#f0f0f0",
   },
-  fileName: { fontSize: 16, fontWeight: '600' },
-  dateText: { fontSize: 14, color: '#555', marginBottom: 8 },
-  actions: { flexDirection: 'row', justifyContent: 'space-between' },
-  open: { color: '#2F3C7E', fontWeight: 'bold' },
-  delete: { color: 'crimson', fontWeight: 'bold' },
+  fileName: { fontSize: 16, fontWeight: "600" },
+  dateText: { fontSize: 14, color: "#555", marginBottom: 8 },
+  actions: { flexDirection: "row", justifyContent: "space-between" },
+  open: { color: "#2F3C7E", fontWeight: "bold" },
+  delete: { color: "crimson", fontWeight: "bold" },
   modalHeader: {
     padding: 10,
-    backgroundColor: '#2F3C7E',
+    backgroundColor: "#2F3C7E",
   },
   closeButton: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
     fontSize: 16,
   },
 });
-

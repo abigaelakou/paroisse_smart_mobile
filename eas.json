@@ -1,0 +1,26 @@
+{
+    "cli": {
+        "version": ">=3.15.0"
+    },
+    "build": {
+        "dev": {
+            "developmentClient": true,
+            "distribution": "internal",
+            "env": {
+                "APP_VARIANT": "dev"
+            }
+        },
+        "preview": {
+            "distribution": "internal",
+            "env": {
+                "APP_VARIANT": "preview"
+            }
+        },
+        "production": {
+            "distribution": "store",
+            "env": {
+                "APP_VARIANT": "prod"
+            }
+        }
+    }
+}
